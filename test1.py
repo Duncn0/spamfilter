@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sat Jan 30 21:25:19 2021
+Created on Fri Jan 29 09:05:19 2021
 
-@author: Dunca
+@author: Duncan
 """
 from os import listdir
 from collections import Counter
@@ -16,10 +16,15 @@ def extract_words(text):
     
     return splitwords
 
+#counting number of ham and spam test data
+numberofham = len(listdir('spam/'))
+numberofspam = len(listdir('ham/'))
+
 
 spamfiles = listdir('spam/')
 spamwords = []
 print(spamfiles)
+
 
 #open all the spam files and add all the words to a list
 for file in spamfiles:
@@ -29,6 +34,7 @@ for file in spamfiles:
         spamwords.extend(wordtokens)
     except:
         print('This file could not be read.')
+        myfile.close()
 
 #create a dictionary of the spam words
 spamcounts = Counter(spamwords)
@@ -46,9 +52,47 @@ for file in hamfiles:
         hamwords.extend(wordtokens)
     except:
         print('This file could not be read.')
-    myfile.close()
+        myfile.close()
 
 #create a dictionary of the spam words
 hamcounts = Counter(hamwords)
 print(hamcounts)
 
+#find spamicity of each word
+spamicitydic = {'word': 'probspam'}
+for w in spamcounts:
+    spamicitydic[w] = spamcounts[w]/len(spamwords)
+print(spamicitydic)
+
+#find hamicity of each word
+hamicitydic = {'word': 'probham'}
+for w in hamcounts:
+    hamicitydic[w] = hamcounts[w]/len(hamwords)
+#print(hamicitydic)
+
+
+totalmessages = numberofham + numberofspam
+ProbHamEmail = numberofham/totalmessages
+ProbSpamEmail = numberofspam/totalmessages
+
+testfile = 'levis is'
+testlist = extract_words(testfile)
+
+probspam = ProbSpamEmail
+for w in testlist:
+    print(spamicitydic[w])
+    try:
+        probspam = probspam * spamicitydic[w]
+    except:
+        print('Error')     
+print('The probability this email is spam is ' + str(probspam))
+
+probham = ProbHamEmail
+for w in testlist:
+    probham = probham * hamicitydic[w]
+print('The probability this email is ham is ' + str(probham))
+
+if probham > probspam:
+    print('This message is ham')
+else:
+    print('This message is spam')
