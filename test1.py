@@ -6,9 +6,11 @@ Created on Fri Jan 29 09:05:19 2021
 """
 from os import listdir
 from collections import Counter
+import string
 
 #convert text into a list and make it all lowercase
 def extract_words(text):
+    text = text.translate(str.maketrans('', '', string.punctuation))
     splitwords = text.split()
     for i in range(len(splitwords)):
         
@@ -16,53 +18,44 @@ def extract_words(text):
     
     return splitwords
 
+def openfile(folder):
+    dirlist = listdir(folder)
+    words = []
+    for file in dirlist:
+        myfile = open(folder + file, 'r')
+        try:
+            wordtokens = extract_words(myfile.read())
+            words.extend(wordtokens)
+        except:
+            print('This file could not be read.')
+        myfile.close()
+    return words
+
 #counting number of ham and spam test data
 numberofham = len(listdir('spam/'))
 numberofspam = len(listdir('ham/'))
 
-
-spamfiles = listdir('spam/')
-spamwords = []
-print(spamfiles)
-
-
 #open all the spam files and add all the words to a list
-for file in spamfiles:
-    myfile = open('spam/' + file, 'r')
-    try:
-        wordtokens = extract_words(myfile.read())
-        spamwords.extend(wordtokens)
-    except:
-        print('This file could not be read.')
-        myfile.close()
+spamwords = openfile('spam/')
+#print(spamwords)
 
 #create a dictionary of the spam words
 spamcounts = Counter(spamwords)
-print(spamcounts)
-
-hamfiles = listdir('ham/')
-hamwords = []
-print(hamfiles)
+#print(spamcounts)
 
 #open all the ham files and add all the words to a list
-for file in hamfiles:
-    myfile = open('ham/' + file, 'r')
-    try:
-        wordtokens = extract_words(myfile.read())
-        hamwords.extend(wordtokens)
-    except:
-        print('This file could not be read.')
-        myfile.close()
+hamwords = openfile('ham/')
+#print(hamwords)
 
 #create a dictionary of the spam words
 hamcounts = Counter(hamwords)
-print(hamcounts)
+#print(hamcounts)
 
 #find spamicity of each word
 spamicitydic = {'word': 'probspam'}
 for w in spamcounts:
     spamicitydic[w] = spamcounts[w]/len(spamwords)
-print(spamicitydic)
+#print(spamicitydic)
 
 #find hamicity of each word
 hamicitydic = {'word': 'probham'}
@@ -75,24 +68,21 @@ totalmessages = numberofham + numberofspam
 ProbHamEmail = numberofham/totalmessages
 ProbSpamEmail = numberofspam/totalmessages
 
-testfile = 'levis is'
-testlist = extract_words(testfile)
+testfile = open('ham/0070.1999-12-27.farmer.ham.txt', 'r')
+testwords = extract_words(testfile.read())
+print(testwords)
 
-probspam = ProbSpamEmail
-for w in testlist:
-    print(spamicitydic[w])
-    try:
-        probspam = probspam * spamicitydic[w]
-    except:
-        print('Error')     
-print('The probability this email is spam is ' + str(probspam))
+SpamProbability = 1
+for i in testwords:
+    print(i, spamicitydic.get(i, 1))
+    IndividualProbability = spamicitydic.get(i, 1)
+    SpamProbability = SpamProbability * IndividualProbability
 
-probham = ProbHamEmail
-for w in testlist:
-    probham = probham * hamicitydic[w]
-print('The probability this email is ham is ' + str(probham))
+print(SpamProbability)
 
-if probham > probspam:
-    print('This message is ham')
-else:
-    print('This message is spam')
+HamProbability = 1
+for i in testwords:
+    print(i, hamicitydic.get(i, 1))
+    IndividualProbability = hamicitydic.get(i, 1)
+    HamProbability = HamProbability * IndividualProbability
+print(HamProbability)
